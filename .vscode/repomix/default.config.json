@@ -1,0 +1,12 @@
+{
+  "include": [
+    "."
+  ],
+  "ignore": {
+    "customPatterns": []
+  },
+  "output": {
+    "filePath": "./out/repomix/jsonweir-full.md",
+    "style": "markdown"
+  }
+}

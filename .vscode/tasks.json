@@ -1,0 +1,58 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "repomix: Generate Markdown & Copy to Clipboard",
+      "type": "shell",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}/.vscode/scripts/run_repomix.ps1",
+          "${workspaceFolder}/.vscode/repomix/${input:repomixConfig}"
+        ]
+      },
+      "linux": {
+        "command": "${workspaceFolder}/.vscode/scripts/run_repomix.sh",
+        "args": ["${workspaceFolder}/.vscode/repomix/${input:repomixConfig}"]
+      },
+      "osx": {
+        "command": "${workspaceFolder}/.vscode/scripts/run_repomix.sh",
+        "args": ["${workspaceFolder}/.vscode/repomix/${input:repomixConfig}"]
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "repomixConfig",
+      "type": "pickString",
+      "description": "Select a repomix configuration profile to use",
+      "options": [
+        {
+          "label": "Default",
+          "value": "default.config.json"
+        },
+        {
+          "label": "Jsonweir",
+          "value": "jsonweir.config.json"
+        }
+      ],
+      "default": "default.config.json"
+    }
+  ]
+}
