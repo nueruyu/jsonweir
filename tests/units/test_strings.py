@@ -66,3 +66,17 @@ def test_unescaped_control_character_is_fatal():
     events = feed_chars(decoder, "\n")
 
     assert events == [JsonParseError("Invalid control character in string", fatal=True)]
+
+
+def test_invalid_unicode_escape_resets_escape_state():
+    decoder = JsonStringDecoder()
+
+    events = feed_chars(decoder, "\\u12g")
+
+    assert events == [
+        JsonParseError(
+            "Invalid character 'g' in unicode escape sequence",
+            fatal=True,
+        )
+    ]
+    assert decoder.can_flush_delta

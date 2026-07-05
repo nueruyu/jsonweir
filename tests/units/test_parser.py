@@ -392,3 +392,31 @@ def test_fatal_root_comma_separated_values(source):
 def test_fatal_unescaped_control_character_in_string():
     events = run_parser(['["a\n"]'])
     assert_fatal_error(events, "Invalid control character")
+
+
+def test_fatal_error_stops_processing_current_chunk():
+    parser = IncrementalJsonParser()
+
+    events = list(parser.feed("[1,]{}"))
+
+    assert events == [
+        StartArray(path=()),
+        Scalar(path=(0,), value=1),
+        JsonParseError("Unexpected ']'", fatal=True),
+    ]
+
+
+def test_fatal_error_stops_processing_later_input():
+    parser = IncrementalJsonParser()
+
+    first_events = list(parser.feed("[1,]"))
+    later_events = list(parser.feed("{}"))
+    finish_events = list(parser.finish())
+
+    assert first_events == [
+        StartArray(path=()),
+        Scalar(path=(0,), value=1),
+        JsonParseError("Unexpected ']'", fatal=True),
+    ]
+    assert later_events == []
+    assert finish_events == []

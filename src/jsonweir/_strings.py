@@ -80,6 +80,8 @@ class JsonStringDecoder:
             # (e.g. a closing quote or comma) fails immediately instead of being
             # swallowed into the buffer and desynchronising the parser.
             if char not in "0123456789abcdefABCDEF":
+                self._unicode_buffer = None
+                self._in_escape = False
                 yield JsonParseError(
                     f"Invalid character {char!r} in unicode escape sequence",
                     fatal=True,

@@ -22,14 +22,22 @@ class IncrementalJsonParser:
 
         self._in_string = False
         self._string_is_key = False
+        self._failed = False
 
     @property
     def path(self) -> JsonPath:
         return self._containers.path
 
     def feed(self, chunk: str) -> Generator[Event, None, None]:
+        if self._failed:
+            return
+
         for char in chunk:
-            yield from self._parse_char(char)
+            for event in self._parse_char(char):
+                yield event
+                if _is_fatal_error(event):
+                    self._failed = True
+                    return
 
         if self._in_string and self._string_decoder.can_flush_delta:
             yield from self._string_decoder.flush_delta(
@@ -37,19 +45,29 @@ class IncrementalJsonParser:
             )
 
     def finish(self) -> Generator[Event, None, None]:
-        yield from self._flush_literal_buffer_if_any()
+        if self._failed:
+            return
+
+        for event in self._flush_literal_buffer_if_any():
+            yield event
+            if _is_fatal_error(event):
+                self._failed = True
+                return
 
         if self._in_string:
+            self._failed = True
             yield JsonParseError("Unterminated string at end of input", fatal=True)
             return
 
         if self._containers.has_unclosed_containers:
+            self._failed = True
             yield JsonParseError(
                 "Unterminated object or array at end of input", fatal=True
             )
             return
 
         if self._containers.root_is_empty:
+            self._failed = True
             yield JsonParseError("Expected JSON value at end of input", fatal=True)
 
     def _parse_char(self, char: str) -> Generator[Event, None, None]:
@@ -132,3 +150,7 @@ class IncrementalJsonParser:
                 yield from self._end_string(event.value)
             else:
                 yield event
+
+
+def _is_fatal_error(event: Event) -> bool:
+    return isinstance(event, JsonParseError) and event.fatal
