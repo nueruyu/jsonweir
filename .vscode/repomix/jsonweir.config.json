@@ -1,0 +1,15 @@
+{
+  "include": [
+    "src/jsonweir",
+    "tests",
+    "README.md",
+    "pyproject.toml"
+  ],
+  "ignore": {
+    "customPatterns": []
+  },
+  "output": {
+    "filePath": "./out/repomix/jsonweir.md",
+    "style": "markdown"
+  }
+}
